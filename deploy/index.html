@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<title>KITT BOATS — Каталог услуг и аксессуаров</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --blue:      #0067ba;
+  --blue-l:    #1a8fe0;
+  --red:       #f54639;
+  --red-d:     #c62828;
+  --brand-grad: linear-gradient(135deg, #0067ba 0%, #3a3f99 40%, #9b2750 65%, #f54639 100%);
+  --brand-h:    linear-gradient(90deg, #0067ba 0%, #f54639 100%);
+
+  --bg:        #fafbfc;
+  --bg-white:  #ffffff;
+  --bg-light:  #f0f2f5;
+  --text:      #1a1a2e;
+  --text2:     #3d3d5c;
+  --dim:       #6b7280;
+  --muted:     #9ca3af;
+  --border:    rgba(0,0,0,0.06);
+
+  --font-heading: 'Oswald', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Flipbook ── */
+#flipbook { position: relative; width: 100%; height: 100%; min-height: 100dvh; overflow: hidden; }
+
+.page {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  overflow-y: auto; overflow-x: hidden;
+  transition: transform 0.6s cubic-bezier(0.4,0,0.2,1), opacity 0.6s cubic-bezier(0.4,0,0.2,1);
+  will-change: transform, opacity;
+  opacity: 0; transform: translateX(100%);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+.page::-webkit-scrollbar { width: 4px; }
+.page::-webkit-scrollbar-track { background: transparent; }
+.page::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+.page.active { opacity: 1; transform: translateX(0); z-index: 2; }
+.page.prev   { opacity: 0; transform: translateX(-40%); z-index: 1; }
+.page.next   { opacity: 0; transform: translateX(100%); z-index: 1; }
+
+.page-inner {
+  min-height: 100%;
+  padding: 60px 56px 100px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ── Navigation ── */
+.nav-arrow {
+  position: fixed; top: 50%; transform: translateY(-50%); z-index: 100;
+  width: 48px; height: 48px;
+  border: none; border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+  color: var(--text); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s; outline: none;
+}
+.nav-arrow:hover { background: var(--red); color: #fff; box-shadow: 0 4px 20px rgba(245,70,57,0.3); }
+.nav-arrow.left  { left: 12px; }
+.nav-arrow.right { right: 12px; }
+.nav-arrow:disabled { opacity: 0.2; pointer-events: none; }
+
+/* ── Bottom Bar ── */
+.bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  height: 56px;
+  background: rgba(255,255,255,0.95); backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+}
+.page-dots { display: flex; gap: 6px; align-items: center; }
+.page-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(0,0,0,0.12);
+  cursor: pointer; transition: all 0.3s; border: none; outline: none;
+}
+.page-dot.active { background: var(--red); width: 24px; border-radius: 4px; }
+.page-counter { font-family: var(--font-heading); font-size: 14px; color: var(--dim); letter-spacing: 1px; }
+
+/* ── Scroll Hint ── */
+.scroll-down {
+  position: fixed;
+  left: 50%;
+  bottom: 72px;
+  transform: translateX(-50%);
+  z-index: 98;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.28);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.8);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.scroll-down.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.scroll-down svg {
+  width: 16px;
+  height: 16px;
+  stroke: rgba(255,255,255,0.88);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: scrollHintFloat 1.8s ease-in-out infinite;
+}
+
+/* ── Tent Items ── */
+.tent-list {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+}
+.tent-item {
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px; overflow: hidden;
+}
+.tent-name {
+  font-family: var(--font-heading); font-size: 11px; font-weight: 700;
+  color: #fff; text-transform: uppercase; letter-spacing: 0.3px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  padding: 8px 10px; line-height: 1.25; text-align: center;
+  height: 38px; display: flex; align-items: center; justify-content: center;
+}
+.tent-img-wrap {
+  width: 100%; height: 140px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.tent-img {
+  width: 100%; height: 100%;
+  object-fit: contain; display: block;
+}
+@media (min-width: 768px) {
+  .tent-list { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .tent-name { font-size: 13px; }
+  .tent-img-wrap { height: 160px; }
+}
+@media (max-width: 600px) {
+  .tent-list { gap: 8px; }
+  .tent-img-wrap { height: 120px; }
+}
+
+/* ── Product Blocks (scrollable detail view) ── */
+.product-block {
+  margin-bottom: 24px;
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px; overflow: hidden;
+  padding: 14px;
+}
+.product-block-name {
+  font-family: var(--font-heading); font-size: 16px; font-weight: 700;
+  color: #fff; text-transform: uppercase; letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  margin-bottom: 10px; text-align: center;
+}
+.product-block .tent-img-wrap {
+  height: 180px; margin-bottom: 12px; border-radius: 10px; overflow: hidden;
+}
+.product-block .tent-img { border-radius: 10px; }
+.product-block-desc {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.72;
+  color: rgba(255,255,255,0.82);
+  margin-bottom: 16px;
+  font-weight: 400;
+  letter-spacing: 0.15px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.product-block .tent-prices {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  align-items: stretch;
+}
+.product-block .tp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 76px;
+  padding: 10px 8px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 100%);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  text-align: center;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.product-block .tp::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--brand-h);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.product-block .tp:hover {
+  background: linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%);
+  border-color: rgba(255,255,255,0.18);
+  transform: translateY(-2px);
+}
+.product-block .tp:hover::before {
+  opacity: 1;
+}
+.product-block .tp .tp-model {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  line-height: 1.2;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-break: break-word;
+}
+.product-block .tp .tp-price {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+}
+.product-block .tent-prices[style*="justify-content:center"] {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center !important;
+}
+.product-block .tent-prices[style*="justify-content:center"] .tp {
+  flex: 0 1 136px;
+  padding: 12px 20px;
+  min-width: 120px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 100%);
+  border-color: rgba(255,255,255,0.12);
+}
+.product-block .tent-prices[style*="justify-content:center"] .tp .tp-price {
+  font-size: 18px;
+}
+
+/* ══════════════════════════════════════════════════════ */
+/*   PAGE 1: COVER                                       */
+/* ══════════════════════════════════════════════════════ */
+.cover-page {
+  background: var(--brand-grad);
+  position: relative; overflow: hidden;
+}
+/* Ensure cover pages stay absolutely positioned in the flipbook */
+.page.cover-page { position: absolute; }
+.cover-page::before {
+  content: ''; position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 40px 40px; pointer-events: none; z-index: 1;
+}
+.cover-orb {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  filter: blur(60px); opacity: 0.3;
+  animation: orbFloat 12s ease-in-out infinite;
+}
+.cover-orb-1 { width: 300px; height: 300px; background: rgba(255,255,255,0.15); top: -80px; right: -60px; }
+.cover-orb-2 { width: 200px; height: 200px; background: rgba(0,103,186,0.3); bottom: 10%; left: -40px; animation-delay: -4s; }
+.cover-orb-3 { width: 250px; height: 250px; background: rgba(245,70,57,0.2); bottom: -60px; right: 20%; animation-delay: -8s; }
+@keyframes orbFloat {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%     { transform: translate(20px,-15px) scale(1.05); }
+  66%     { transform: translate(-10px,20px) scale(0.95); }
+}
+
+.cover-inner {
+  position: relative; z-index: 10;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: calc(100vh - 56px); text-align: center;
+  padding: 50px 16px;
+}
+
+/* Contact block — top right, glass card */
+.cover-contact {
+  position: absolute; top: 16px; right: 16px; z-index: 20;
+  background: rgba(255,255,255,0.12); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 14px; padding: 16px;
+  animation: fadeSlideDown 0.7s ease 0.3s both;
+  display: flex; flex-direction: column; gap: 12px;
+  min-width: 200px;
+}
+.cc-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.cc-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.cc-icon svg { width: 15px; height: 15px; fill: #fff; stroke: #fff; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.cc-label { font-family: var(--font-heading); font-size: 10px; color: rgba(255,255,255,0.65); letter-spacing: 0.3px; }
+.cc-text { text-align: left; }
+.cc-phone {
+  font-family: var(--font-heading); font-size: 15px; font-weight: 600;
+  color: #fff; letter-spacing: 0.3px; line-height: 1.2;
+}
+/* Messenger badges */
+.cc-messengers {
+  display: flex; gap: 6px; margin-top: 4px;
+}
+.cc-msg-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 6px;
+  font-family: var(--font-heading); font-size: 10px; font-weight: 600;
+  color: #fff; letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.cc-msg-badge svg { width: 11px; height: 11px; fill: #fff; }
+.cc-site {
+  font-family: var(--font-heading); font-size: 14px; font-weight: 600;
+  color: #fff; letter-spacing: 0.3px;
+}
+a.cc-phone, a.cc-phone:link, a.cc-phone:visited,
+a.cc-site,  a.cc-site:link,  a.cc-site:visited  { color: #fff; text-decoration: none; }
+.cc-addr-label {
+  font-family: var(--font-heading); font-size: 10px; font-weight: 600;
+  color: rgba(255,255,255,0.7); letter-spacing: 1.5px;
+  text-transform: uppercase; margin-bottom: 2px;
+}
+.cc-addr {
+  font-size: 12px; color: #fff; line-height: 1.4; font-weight: 500;
+}
+
+/* Logo — transparent PNG */
+.cover-logo {
+  width: clamp(60px, 15vw, 110px); height: auto;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 20px rgba(255,255,255,0.2));
+  animation: fadeSlideUp 0.8s ease 0.4s both;
+}
+
+.cover-eyebrow {
+  display: inline-flex; align-items: center; gap: 12px;
+  font-family: var(--font-heading); font-size: 11px; font-weight: 500;
+  letter-spacing: 5px; text-transform: uppercase;
+  color: rgba(255,255,255,0.85); margin-bottom: 10px;
+  animation: fadeSlideUp 0.8s ease 0.5s both;
+}
+.cover-eyebrow::before, .cover-eyebrow::after {
+  content: ''; width: 30px; height: 1px; background: rgba(255,255,255,0.5);
+}
+
+/* "УСЛУГИ И АКСЕССУАРЫ" — main title, mobile-first */
+.cover-title-big {
+  font-family: 'Bebas Neue', var(--font-heading);
+  font-size: clamp(32px, 9vw, 72px);
+  font-weight: 400; line-height: 1.1;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  animation: fadeSlideUp 0.9s ease 0.6s both;
+  padding: 0 10px;
+}
+
+/* "для вашего КИТа" — subtitle */
+.cover-subtitle {
+  font-family: var(--font-heading); font-size: clamp(16px, 5vw, 28px);
+  font-weight: 500; letter-spacing: 3px; text-transform: uppercase;
+  color: #fff; margin-top: 8px;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.15);
+  animation: fadeSlideUp 0.8s ease 0.75s both;
+}
+
+.cover-lead {
+  margin-top: 14px;
+  max-width: 620px;
+  padding: 12px 18px;
+  font-size: clamp(13px, 2vw, 16px);
+  line-height: 1.65;
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 16px;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  animation: fadeSlideUp 0.8s ease 0.82s both;
+}
+
+.cover-desc {
+  margin-top: 16px; font-size: clamp(12px, 3.2vw, 14px); line-height: 1.7;
+  color: rgba(255,255,255,0.65); max-width: 340px; font-weight: 400;
+  animation: fadeSlideUp 0.8s ease 0.85s both;
+  padding: 0 10px;
+}
+
+.cover-badges {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: 20px; justify-content: center;
+  animation: fadeSlideUp 0.8s ease 0.95s both;
+  padding: 0 10px;
+}
+.cover-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  font-size: clamp(9px, 2.5vw, 11px); font-weight: 600; letter-spacing: 1px;
+  color: rgba(255,255,255,0.9);
+  font-family: var(--font-heading); text-transform: uppercase;
+  transition: all 0.3s; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  outline: none;
+}
+/* messenger badge icons */
+.mc-app {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 7px; border-radius: 4px;
+  font-family: var(--font-heading); font-size: 9px; font-weight: 700;
+  color: #fff; letter-spacing: 0.5px; text-transform: uppercase;
+  text-decoration: none;
+}
+.mc-app.max { background: linear-gradient(135deg, #2787F5 0%, #7B61FF 100%); }
+.mc-app.tg  { background: #2CA5E0; }
+.mc-app.vk  { background: #0077ff; }
+a.mc-item, a.mc-item:link, a.mc-item:visited, a.mc-item:active { text-decoration: none; color: rgba(255,255,255,0.9); }
+a.mc-item:hover { color: #fff; }
+.mc-label {
+  font-family: var(--font-heading); font-size: 10px;
+  color: rgba(255,255,255,0.72); letter-spacing: 0.3px;
+}
+.mc-full-row {
+  display: flex; align-items: center; gap: 5px;
+  justify-content: center; width: 100%;
+  flex-wrap: wrap;
+}
+.cover-badge:hover {
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+.cb-icon {
+  width: clamp(12px, 3.5vw, 16px);
+  height: clamp(12px, 3.5vw, 16px);
+  line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.cb-icon svg {
+  width: 100%; height: 100%;
+  stroke: rgba(255,255,255,0.9); stroke-width: 1.8;
+  fill: none; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.cover-cta {
+  margin-top: 24px;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 12px 28px;
+  background: #fff; color: var(--text);
+  border: none; border-radius: 50px;
+  font-size: clamp(12px, 3.5vw, 14px); font-weight: 700; cursor: pointer;
+  font-family: var(--font-body); text-decoration: none;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  transition: transform 0.22s, box-shadow 0.22s;
+  animation: fadeSlideUp 0.8s ease 1.1s both;
+  position: relative; overflow: hidden;
+}
+.cover-cta::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--brand-h); opacity: 0; transition: opacity 0.3s;
+}
+.cover-cta:hover { transform: scale(1.04) translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.cover-cta:hover::before { opacity: 1; }
+.cover-cta span { position: relative; z-index: 1; transition: color 0.3s; }
+.cover-cta:hover span { color: #fff; }
+.cover-cta.secondary {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: none;
+}
+.cover-cta.secondary::before { background: rgba(255,255,255,0.18); }
+.cover-cta.secondary:hover span { color: #fff; }
+
+
+/* ══════════════════════════════════════════════════════ */
+/*   PAGE 2: SERVICES                                    */
+/* ══════════════════════════════════════════════════════ */
+.services-page {
+  background: var(--brand-grad);
+}
+
+h2 { font-family: var(--font-heading); font-size: clamp(22px, 4vw, 36px); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; line-height: 1.15; }
+h3 { font-family: var(--font-heading); font-size: clamp(18px, 3vw, 26px); font-weight: 600; }
+p { font-size: 15px; line-height: 1.65; color: var(--dim); }
+
+/* Page 2 text colors */
+.services-page h2 { color: #fff; }
+.services-page h3 { color: #fff; }
+.services-page p { color: rgba(255,255,255,0.7); }
+
+.section-header { margin-bottom: 28px; }
+.section-header .red-line { width: 60px; height: 3px; background: var(--brand-h); border-radius: 2px; margin: 16px 0; }
+.services-page .section-header .red-line { background: rgba(255,255,255,0.5); }
+
+.section-tag {
+  display: inline-block; padding: 4px 12px;
+  background: rgba(245,70,57,0.12); color: var(--red);
+  border-radius: 4px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 2px;
+  margin-bottom: 16px; font-family: var(--font-heading);
+}
+.services-page .section-tag {
+  background: rgba(255,255,255,0.15); color: #fff;
+}
+
+/* Service Category */
+.svc-category { margin-bottom: 32px; }
+.svc-cat-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.svc-cat-icon {
+  width: 50px; height: 50px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+  background: var(--brand-grad); color: #fff;
+  box-shadow: 0 4px 16px rgba(0,103,186,0.2);
+}
+.services-page .svc-cat-icon {
+  background: rgba(255,255,255,0.15); box-shadow: none;
+}
+.svc-cat-title { font-family: var(--font-heading); font-size: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text); }
+.svc-cat-desc { font-size: 13px; color: var(--dim); margin-top: 2px; }
+.services-page .svc-cat-title { color: #fff; }
+.services-page .svc-cat-desc { color: rgba(255,255,255,0.7); }
+
+.svc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+.svc-card {
+  background: var(--bg-white); border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border);
+  transition: transform 0.3s, box-shadow 0.3s;
+  display: flex; flex-direction: column;
+}
+.svc-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+.services-page .svc-card {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.services-page .svc-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+.svc-card-img { width: 100%; height: 160px; object-fit: cover; display: block; }
+.svc-card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; }
+.svc-card-name {
+  font-family: var(--font-heading); font-size: 14px; font-weight: 600;
+  color: var(--text); text-transform: uppercase; letter-spacing: 0.3px;
+  line-height: 1.3; margin-bottom: 8px;
+}
+.services-page .svc-card-name { color: #fff; }
+.svc-card-price {
+  font-family: var(--font-heading); font-size: 18px; font-weight: 700;
+  color: var(--red);
+  margin-top: auto;
+}
+.services-page .svc-card-price { color: #fff; }
+.svc-card-note { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.services-page .svc-card-note { color: rgba(255,255,255,0.6); }
+
+.svc-table { display: flex; flex-direction: column; gap: 6px; }
+.svc-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg-white); border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.svc-row:hover { transform: translateX(4px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+.services-page .svc-row {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.services-page .svc-row:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+.svc-row-left { display: flex; align-items: center; gap: 12px; }
+.svc-row-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--bg-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.services-page .svc-row-icon { background: rgba(255,255,255,0.12); }
+.svc-row-name { font-family: var(--font-heading); font-size: 13px; font-weight: 500; color: var(--text); letter-spacing: 0.3px; }
+.services-page .svc-row-name { color: #fff; }
+.svc-row-price {
+  font-family: var(--font-heading); font-size: 17px; font-weight: 700;
+  color: var(--red);
+  white-space: nowrap;
+}
+.services-page .svc-row-price { color: #fff; }
+
+.cta-banner {
+  margin-top: 32px; padding: 24px; position: relative;
+  border-radius: 12px; overflow: hidden;
+  background: var(--brand-grad); color: #fff; text-align: center;
+}
+.cta-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 30px 30px; pointer-events: none;
+}
+.services-page .cta-banner {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.services-page .cta-banner::before { display: none; }
+.cta-banner h3 { color: #fff; font-size: 18px; margin-bottom: 8px; position: relative; z-index: 1; }
+.cta-banner p { color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 16px; position: relative; z-index: 1; }
+.cta-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; background: #fff;
+  color: var(--text); border-radius: 50px;
+  font-weight: 700; font-size: 13px; text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s; position: relative; z-index: 1;
+}
+.cta-btn:hover { transform: scale(1.03); box-shadow: 0 4px 20px rgba(0,0,0,0.15); text-decoration: none; }
+
+.page-intro {
+  margin: 0 auto 18px;
+  max-width: 760px;
+  padding: 16px 18px;
+  text-align: center;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+}
+.page-intro p {
+  color: rgba(255,255,255,0.78);
+  font-size: 14px;
+  margin: 0;
+}
+.page-pill-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.page-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.92);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 26px 0 14px;
+}
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.16);
+}
+.section-divider span {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.82);
+}
+.product-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.16);
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.featured-block {
+  background: linear-gradient(145deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%);
+  border-color: rgba(255,255,255,0.22);
+}
+
+/* ── Page 2 active: global UI overrides ── */
+body.dark-pages-active .bottom-bar {
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+body.dark-pages-active .page-counter { color: rgba(255,255,255,0.7); }
+body.dark-pages-active .page-dot { background: rgba(255,255,255,0.25); }
+body.dark-pages-active .page-dot.active { background: #fff; }
+body.dark-pages-active .nav-arrow {
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+}
+body.dark-pages-active .nav-arrow:hover { background: var(--red); color: #fff; }
+/* scrollbar on page 2 */
+.services-page::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); }
+
+/* ══════════ RESPONSIVE ══════════ */
+@media (max-width: 600px) {
+  .page-inner { padding: 40px 44px calc(108px + env(safe-area-inset-bottom, 0px)); }
+
+  /* Smaller nav arrows on mobile, tight to edges */
+  .nav-arrow { width: 30px; height: 30px; font-size: 12px; }
+  .nav-arrow.left { left: 4px; }
+  .nav-arrow.right { right: 4px; }
+
+  .svc-card-img { height: 120px; }
+  .svc-grid { grid-template-columns: 1fr; }
+
+  /* Hide desktop contact card on mobile */
+  .cover-contact { display: none !important; }
+
+  /* Tighter cover layout */
+  .cover-inner {
+    padding: max(18px, env(safe-area-inset-top, 0px)) 14px 10px;
+    min-height: calc(100dvh - 56px - env(safe-area-inset-bottom, 0px));
+  }
+  .cover-logo { width: 54px; margin-bottom: 6px; }
+  .cover-eyebrow { font-size: 8px; letter-spacing: 3px; margin-bottom: 4px; }
+  .cover-eyebrow::before, .cover-eyebrow::after { width: 16px; }
+  .cover-title-big { font-size: clamp(24px, 7.2vw, 42px); letter-spacing: 1.5px; line-height: 1.02; }
+  .cover-subtitle { font-size: clamp(13px, 4vw, 18px); margin-top: 2px; letter-spacing: 2px; }
+  .cover-lead {
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    max-width: 338px;
+    padding: 10px 12px;
+    color: rgba(255,255,255,0.96);
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.16);
+    border-radius: 14px;
+  }
+  .cover-badges { gap: 5px; margin-top: 10px; padding: 0 4px; }
+  .cover-badge { padding: 4px 8px; font-size: 8px; border-radius: 8px; letter-spacing: 0.7px; }
+  .cb-icon { width: 12px; height: 12px; }
+  .cover-cta { margin-top: 16px; padding: 10px 24px; font-size: 12px; }
+
+  /* Mobile contact strip */
+  .mobile-contacts {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    animation: fadeSlideUp 0.8s ease 1.2s both;
+  }
+  .mc-item {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--font-heading);
+    font-size: 10px; font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.2px;
+    padding: 1px 0;
+  }
+  .mc-item svg { width: 11px; height: 11px; fill: rgba(255,255,255,0.78); flex-shrink: 0; }
+  .mc-sep {
+    color: rgba(255,255,255,0.2);
+    font-size: 11px;
+    padding: 3px 0;
+  }
+  .mc-msg-row {
+    display: inline-flex; gap: 6px;
+    padding: 2px 0;
+  }
+  .mc-msg {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 5px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 4px;
+    font-family: var(--font-heading);
+    font-size: 8px; font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .mc-msg svg { width: 9px; height: 9px; fill: rgba(255,255,255,0.6); }
+
+  /* Compact services page on mobile */
+  .services-page .page-inner { padding: 30px 44px 80px; }
+  .services-page .section-header { margin-bottom: 16px; }
+  .services-page .section-header h2 { font-size: 20px; }
+  .services-page .section-header p { font-size: 12px; margin-top: 6px !important; }
+  .page-intro { padding: 12px 14px; margin-bottom: 14px; }
+  .page-intro p { font-size: 12px; line-height: 1.55; }
+  .page-pill { padding: 5px 10px; font-size: 9px; }
+  .section-divider { margin: 18px 0 10px; gap: 8px; }
+  .section-divider span { font-size: 11px; letter-spacing: 0.9px; }
+  .services-page .red-line { margin: 8px 0; }
+  .svc-category { margin-bottom: 16px; }
+  .svc-cat-header { margin-bottom: 8px; }
+  .svc-cat-title { font-size: 14px; }
+  .svc-row { padding: 8px 10px; }
+  .svc-row-name { font-size: 12px; }
+  .svc-row-price { font-size: 14px; }
+  .svc-table { gap: 4px; }
+  .product-block { padding: 10px; margin-bottom: 16px; }
+  .product-block-name { font-size: 14px; }
+  .product-block .tent-img-wrap { height: 150px; }
+  .product-block-desc { font-size: 13px; }
+  .product-block .tent-prices { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .product-block .tp { padding: 8px 4px; }
+  .product-block .tp .tp-model { font-size: 9px; }
+  .product-block .tp .tp-price { font-size: 12px; }
+}
+@media (min-width: 768px) {
+  .svc-grid { grid-template-columns: repeat(3, 1fr); }
+  .svc-card-img { height: 150px; }
+}
+
+/* ── UTP Grid ── */
+.utp-grid {
+  margin-top: 20px; width: 100%; max-width: 480px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+  animation: fadeSlideUp 0.8s ease 1.1s both;
+  padding: 0 50px;
+}
+.utp-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+  padding: 10px 8px;
+  background: rgba(255,255,255,0.14);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  gap: 4px;
+  min-height: 64px;
+}
+.utp-num {
+  font-family: var(--font-heading); font-size: 20px; font-weight: 700;
+  color: #fff; line-height: 1.1; letter-spacing: 0.5px;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.14);
+}
+.utp-label {
+  font-family: var(--font-heading); font-size: 10px; font-weight: 500;
+  color: rgba(255,255,255,0.92); text-transform: uppercase; letter-spacing: 1px;
+  line-height: 1.35;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.12);
+}
+.utp-motto {
+  grid-column: 1 / -1;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.12) 45%, rgba(245,70,57,0.18) 100%);
+  border-color: rgba(255,255,255,0.34);
+  padding: 13px 10px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.12);
+  animation: mottoGlow 4.8s ease-in-out infinite;
+}
+.utp-motto .utp-label {
+  font-size: 12px; font-weight: 700; color: #fff; letter-spacing: 1.5px;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 0 18px rgba(255,255,255,0.1);
+}
+.utp-motto::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.04) 35%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.04) 65%, transparent 100%);
+  transform: translateX(-120%);
+  animation: mottoShine 5.5s ease-in-out infinite;
+}
+.utp-motto-strong {
+  display: block;
+  font-size: 14px;
+  letter-spacing: 1.8px;
+  margin-bottom: 2px;
+}
+.utp-motto-soft {
+  display: block;
+  color: rgba(255,255,255,0.92);
+}
+@media (min-width: 768px) {
+  .utp-grid { grid-template-columns: repeat(4, 1fr); max-width: 700px; gap: 10px; padding: 0 10px; }
+  .utp-motto { grid-column: 1 / -1; }
+  .utp-num { font-size: 22px; }
+  .utp-label { font-size: 11px; }
+  .utp-motto .utp-label { font-size: 13px; }
+  .utp-motto-strong { font-size: 16px; }
+}
+@media (max-width: 600px) {
+  .utp-grid { gap: 5px; margin-top: 10px; padding: 0 12px; }
+  .utp-item { padding: 6px 5px; min-height: 46px; }
+  .utp-num { font-size: 14px; }
+  .utp-label { font-size: 8px; letter-spacing: 0.4px; line-height: 1.2; }
+  .utp-motto { padding: 9px 7px; }
+  .utp-motto .utp-label { font-size: 9px; }
+  .utp-motto-strong { font-size: 11px; margin-bottom: 1px; }
+  .utp-motto-soft { font-size: 8px; }
+}
+
+@media (max-width: 600px) {
+  .bottom-bar {
+    height: calc(56px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+@keyframes fadeSlideUp   { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeSlideDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes scrollHintFloat {
+  0%, 100% { transform: translateY(0); opacity: 0.75; }
+  50% { transform: translateY(3px); opacity: 1; }
+}
+@keyframes mottoGlow {
+  0%, 100% { transform: translateY(0); box-shadow: 0 10px 28px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.12); }
+  50% { transform: translateY(-1px); box-shadow: 0 14px 34px rgba(0,0,0,0.16), 0 0 24px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.16); }
+}
+@keyframes mottoShine {
+  0%, 15% { transform: translateX(-120%); }
+  45%, 100% { transform: translateX(120%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .utp-motto,
+  .utp-motto::before {
+    animation: none;
+  }
+}
+
+/* Reviews */
+.review-title {
+  font-family: var(--font-heading);
+  font-size: clamp(22px, 3.2vw, 30px);
+  color: #fff;
+  letter-spacing: 0.8px;
+  text-align: center;
+  text-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  animation: fadeSlideUp 0.8s ease 0.55s both;
+}
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+  max-width: 700px;
+  width: 100%;
+  padding: 0 16px;
+  animation: fadeSlideUp 0.8s ease 0.7s both;
+}
+.review-card {
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: left;
+}
+.review-text {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+.review-author {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.5px;
+}
+/* Final page */
+.final-page {
+  background: var(--brand-grad);
+  position: relative;
+  overflow: hidden;
+}
+.final-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 100%, rgba(245,70,57,0.12) 0%, transparent 50%);
+  background-size: 40px 40px, auto, auto;
+  pointer-events: none;
+  z-index: 1;
+}
+.final-page .cover-inner {
+  justify-content: flex-start;
+  gap: 18px;
+  padding-top: 62px;
+  padding-bottom: 72px;
+}
+.final-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  text-align: center;
+}
+.final-contact-card {
+  width: 100%;
+  max-width: 760px;
+  padding: 22px 22px 20px;
+  border-radius: 18px;
+  background: rgba(17,23,33,0.3);
+  border: 1px solid rgba(255,255,255,0.16);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+}
+.final-help {
+  font-family: var(--font-heading);
+  font-size: clamp(18px, 4vw, 26px);
+  color: #fff;
+  letter-spacing: 0.4px;
+  text-align: center;
+}
+.final-help-note {
+  margin-top: 6px;
+  text-align: center;
+  color: rgba(255,255,255,0.68);
+  font-size: 13px;
+}
+.final-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+.final-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 128px;
+  min-height: 44px;
+  padding: 11px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.08);
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.final-action-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.24);
+}
+.final-action-btn.primary {
+  background: #fff;
+  color: var(--text);
+  border-color: transparent;
+}
+/* Final page contact block — centered */
+.final-contacts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+  animation: fadeSlideUp 0.8s ease 0.9s both;
+}
+.final-phone-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.final-phone-inline {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.final-phone {
+  font-family: var(--font-heading);
+  font-size: clamp(18px, 5vw, 26px);
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+}
+.final-phone-label {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.3px;
+}
+.final-messengers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.final-addr {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  line-height: 1.35;
+}
+.final-site {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  text-align: center;
+  line-height: 1.3;
+}
+.final-site:hover { color: #fff; }
+@media (max-width: 600px) {
+  .nav-arrow {
+    top: auto;
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+    transform: none;
+    width: 34px;
+    height: 34px;
+    font-size: 12px;
+  }
+  .nav-arrow.left { left: 6px; }
+  .nav-arrow.right { right: 6px; }
+  .scroll-down {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    padding: 7px 10px;
+    font-size: 9px;
+    letter-spacing: 0.8px;
+  }
+  .scroll-down svg {
+    width: 14px;
+    height: 14px;
+  }
+  .review-title { font-size: 16px; letter-spacing: 0.6px; }
+  .review-grid { grid-template-columns: 1fr; gap: 5px; margin-top: 6px; }
+  .review-card { padding: 8px; border-radius: 10px; }
+  .review-text { font-size: 10px; line-height: 1.38; margin-bottom: 6px; }
+  .review-author { font-size: 9px; }
+  .final-page .cover-inner {
+    padding-top: 24px;
+    padding-bottom: calc(180px + env(safe-area-inset-bottom, 0px));
+    gap: 10px;
+  }
+  .final-contact-card {
+    padding: 12px 10px;
+    border-radius: 14px;
+    margin-bottom: 6px;
+  }
+  .final-help { font-size: 16px; line-height: 1.05; }
+  .final-help-note { display: none; }
+  .final-action-row { gap: 5px; margin-top: 10px; }
+  .final-action-btn { min-width: 96px; min-height: 34px; font-size: 10px; padding: 7px 10px; }
+  .final-contacts { margin-top: 12px; gap: 8px; }
+  .final-phone-row { gap: 3px; }
+  .final-messenger-row {
+    flex-direction: column;
+    align-items: center;
+  }
+  .final-phone-inline { gap: 4px; }
+  .final-messengers { margin-top: 1px; gap: 6px; }
+  .final-phone { font-size: clamp(12px, 3.5vw, 15px); }
+  .final-phone-label { font-size: 9px; }
+  .final-addr { font-size: 10px; line-height: 1.2; }
+  .final-site { font-size: 10px; line-height: 1.2; }
+  .final-back-btn { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="flipbook">
+
+  <!-- ══════════════ PAGE 1: COVER ══════════════ -->
+  <div class="page active cover-page" data-page="1">
+    <div class="cover-orb cover-orb-1"></div>
+    <div class="cover-orb cover-orb-2"></div>
+    <div class="cover-orb cover-orb-3"></div>
+
+
+    <div class="cover-inner">
+      <!-- Logo with blend mode to kill black bg -->
+      <img class="cover-logo" src="data:image/png;base64,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" alt="KITT BOATS">
+
+      <div class="cover-eyebrow">2026</div>
+
+      <div class="cover-title-big">Услуги<br>и аксессуары</div>
+      <div class="cover-badges">
+        <button class="cover-badge" onclick="goTo(1)"><span class="cb-icon"><svg viewBox="0 0 24 24"><path d="M3 17c0 0 2-8 9-8s9 8 9 8z"/><path d="M8 9V5l4-3 4 3v4"/></svg></span> Тенты</button>
+        <button class="cover-badge" onclick="goTo(2)"><span class="cb-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span> Тюнинг</button>
+        <button class="cover-badge" onclick="goTo(5)"><span class="cb-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span> Аксессуары</button>
+        <button class="cover-badge" onclick="goTo(9)"><span class="cb-icon"><svg viewBox="0 0 24 24"><path d="M6 18V8"/><path d="M18 18V8"/><path d="M9 8h6"/><path d="M7 18h10"/><path d="M9 4h6"/><path d="M12 8V4"/></svg></span> Моторы</button>
+      </div>
+
+      <!-- УТП -->
+      <div class="utp-grid">
+        <div class="utp-item"><span class="utp-num">15 000+</span><span class="utp-label">положительных отзывов</span></div>
+        <div class="utp-item"><span class="utp-num">36 000+</span><span class="utp-label">китоводов в сообществе</span></div>
+        <div class="utp-item"><span class="utp-num">6 лет</span><span class="utp-label">расширенная гарантия</span></div>
+        <div class="utp-item"><span class="utp-num">10+</span><span class="utp-label">лет опыт работы</span></div>
+      </div>
+
+      <!-- Мобильные контакты -->
+      <div class="mobile-contacts" style="display:none">
+        <span class="mc-full-row">
+          <a href="tel:88122147800" class="mc-item"><svg viewBox="0 0 24 24" style="fill:#fff"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> +7 (812) 214-78-00</a>
+          <span class="mc-label">(для звонков)</span>
+        </span>
+        <span class="mc-full-row">
+          <a href="tel:79992083333" class="mc-item">+7 (999) 208-33-33</a>
+          <span class="mc-label">(мессенджеры)</span>
+          <a href="https://max.ru/u/f9LHodD0cOJcuqcYyN3x6HXI0KR_P2_8AGn6lBzGDoXCV66-ENWTeYkB0KU" class="mc-app max" target="_blank" rel="noopener">MAX</a>
+          <a href="https://t.me/kittboats" class="mc-app tg" target="_blank" rel="noopener">TG</a>
+          <a href="https://vk.com/kittboats" class="mc-app vk" target="_blank" rel="noopener">VK</a>
+        </span>
+        <span class="mc-full-row">
+          <span class="mc-item"><svg viewBox="0 0 24 24" style="fill:none;stroke:rgba(255,255,255,0.5);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> г. Санкт-Петербург, Шафировский пр., д. 8</span>
+        </span>
+        <span class="mc-full-row">
+          <a href="https://kittboats.com" class="mc-item" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" style="fill:none;stroke:rgba(255,255,255,0.5);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> kittboats.com</a>
+        </span>
+      </div>
+
+    </div>
+
+    <!-- Контакты (десктоп) -->
+    <div class="cover-contact">
+      <div class="cc-row">
+        <div class="cc-icon"><svg viewBox="0 0 24 24" style="fill:#fff;stroke:none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+        <div class="cc-text">
+          <div style="display:flex;align-items:baseline;gap:6px;">
+            <a href="tel:88122147800" class="cc-phone" style="text-decoration:none;color:#fff;">+7 (812) 214-78-00</a>
+            <span class="cc-label">(для звонков)</span>
+          </div>
+        </div>
+      </div>
+      <div class="cc-row">
+        <div class="cc-icon"><svg viewBox="0 0 24 24" style="fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="cc-text">
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+            <a href="tel:79992083333" class="cc-phone" style="text-decoration:none;color:#fff;">+7 (999) 208-33-33</a>
+            <span class="cc-label">(мессенджеры)</span>
+          </div>
+          <div style="display:flex;gap:5px;margin-top:5px;">
+            <a href="https://max.ru/u/f9LHodD0cOJcuqcYyN3x6HXI0KR_P2_8AGn6lBzGDoXCV66-ENWTeYkB0KU" class="mc-app max" target="_blank" rel="noopener">MAX</a>
+            <a href="https://t.me/kittboats" class="mc-app tg" target="_blank" rel="noopener">TG</a>
+            <a href="https://vk.com/kittboats" class="mc-app vk" target="_blank" rel="noopener">VK</a>
+          </div>
+        </div>
+      </div>
+      <div class="cc-row">
+        <div class="cc-icon"><svg viewBox="0 0 24 24" style="fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="cc-text">
+          <div class="cc-addr-label">г. Санкт-Петербург</div>
+          <div class="cc-addr">Шафировский пр., д. 8 (завод)</div>
+        </div>
+      </div>
+      <div class="cc-row">
+        <div class="cc-icon"><svg viewBox="0 0 24 24" style="fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+        <div class="cc-text"><a href="https://kittboats.com" class="cc-site" style="text-decoration:none;color:#fff;" target="_blank" rel="noopener">kittboats.com</a></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════ PAGE 2: ТЕНТЫ ══════════════ -->
+  <div class="page services-page" data-page="2">
+    <div class="page-inner">
+
+      <div class="section-header" style="margin-bottom:16px">
+        <h2 style="text-align:center">Тенты</h2>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Носовой прозрачный</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/FBS00530-kopiya.jpg" alt="Носовой тент прозрачный" loading="lazy"></div>
+        <div class="product-block-desc">Едете против волны — и ни одна капля не попадёт в лодку, а обзор через прозрачные вставки остаётся полным. Ткань ПВХ 500 г/м², вес всего 2 кг — поставите за пару минут.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">300 НДНД</span><span class="tp-price">4 900 ₽</span></span>
+          <span class="tp"><span class="tp-model">330 НДНД</span><span class="tp-price">4 900 ₽</span></span>
+          <span class="tp"><span class="tp-model">350 НДНД</span><span class="tp-price">5 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">360 НДНД</span><span class="tp-price">4 900 ₽</span></span>
+          <span class="tp"><span class="tp-model">370 НДНД</span><span class="tp-price">5 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">380 НДНД</span><span class="tp-price">5 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">390 НДНД</span><span class="tp-price">6 000 ₽</span></span>
+          <span class="tp"><span class="tp-model">410 НДНД</span><span class="tp-price">6 000 ₽</span></span>
+          <span class="tp"><span class="tp-model">430 НДНД</span><span class="tp-price">6 000 ₽</span></span>
+          <span class="tp"><span class="tp-model">450 НДНД</span><span class="tp-price">8 150 ₽</span></span>
+          <span class="tp"><span class="tp-model">370К НДНД</span><span class="tp-price">7 150 ₽</span></span>
+          <span class="tp"><span class="tp-model">390К НДНД</span><span class="tp-price">7 150 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Носовой с окном</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/1-1.jpg" alt="Носовой тент с окном" loading="lazy"></div>
+        <div class="product-block-desc">В холодное утро тканевые стенки закроют от ветра, а смотровое окно сохранит обзор. ПВХ 500 г/м² — ни дождь, ни брызги не пройдут.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">300 НДНД</span><span class="tp-price">4 900 ₽</span></span>
+          <span class="tp"><span class="tp-model">330 НДНД</span><span class="tp-price">4 900 ₽</span></span>
+          <span class="tp"><span class="tp-model">350 НДНД</span><span class="tp-price">5 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">360 НДНД</span><span class="tp-price">4 900 ₽</span></span>
+          <span class="tp"><span class="tp-model">370 НДНД</span><span class="tp-price">5 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">380 НДНД</span><span class="tp-price">5 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">390 НДНД</span><span class="tp-price">6 000 ₽</span></span>
+          <span class="tp"><span class="tp-model">410 НДНД</span><span class="tp-price">6 000 ₽</span></span>
+          <span class="tp"><span class="tp-model">430 НДНД</span><span class="tp-price">6 000 ₽</span></span>
+          <span class="tp"><span class="tp-model">450 НДНД</span><span class="tp-price">8 150 ₽</span></span>
+          <span class="tp"><span class="tp-model">370К НДНД</span><span class="tp-price">7 150 ₽</span></span>
+          <span class="tp"><span class="tp-model">390К НДНД</span><span class="tp-price">7 150 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Крыша</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/06/IMG_6785_1-kopiya.png" alt="Тент-крыша" loading="lazy"></div>
+        <div class="product-block-desc">Солнце или ливень — просто разложите крышу и спокойно рыбачьте дальше. Алюминиевый каркас держит ветер, а водонепроницаемый материал не пропускает ни капли.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">300–450 НДНД</span><span class="tp-price">5 800 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Транспортировочный</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/08/FBS00538-kopiya2.jpg" alt="Транспортировочный тент" loading="lazy"></div>
+        <div class="product-block-desc">Надел на прицеп — и КИТ доедет чистым: ни пыль, ни камни с дороги не страшны. ПВХ 500 г/м², мотор снимать не нужно.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">330 НДНД</span><span class="tp-price">4 890 ₽</span></span>
+          <span class="tp"><span class="tp-model">350 НДНД</span><span class="tp-price">6 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">360 НДНД</span><span class="tp-price">5 300 ₽</span></span>
+          <span class="tp"><span class="tp-model">370 НДНД</span><span class="tp-price">6 600 ₽</span></span>
+          <span class="tp"><span class="tp-model">380 НДНД</span><span class="tp-price">6 700 ₽</span></span>
+          <span class="tp"><span class="tp-model">390 НДНД</span><span class="tp-price">7 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">410 НДНД</span><span class="tp-price">7 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">430 НДНД</span><span class="tp-price">7 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">450 НДНД</span><span class="tp-price">7 500 ₽</span></span>
+          <span class="tp"><span class="tp-model">370К НДНД</span><span class="tp-price">7 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">390К НДНД</span><span class="tp-price">7 200 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Трансформер</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/02/OR_8127_1.jpg" alt="Тент-трансформер" loading="lazy"></div>
+        <div class="product-block-desc">Тент для ночевки и защиты от дождя и ветра. Подходит для долгих выездов и рыбалки с ночевкой.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">300 НДНД</span><span class="tp-price">19 400 ₽</span></span>
+          <span class="tp"><span class="tp-model">330 НДНД</span><span class="tp-price">19 400 ₽</span></span>
+          <span class="tp"><span class="tp-model">350 НДНД</span><span class="tp-price">20 300 ₽</span></span>
+          <span class="tp"><span class="tp-model">360 НДНД</span><span class="tp-price">20 300 ₽</span></span>
+          <span class="tp"><span class="tp-model">370 НДНД</span><span class="tp-price">20 300 ₽</span></span>
+          <span class="tp"><span class="tp-model">390 НДНД</span><span class="tp-price">22 700 ₽</span></span>
+          <span class="tp"><span class="tp-model">410 НДНД</span><span class="tp-price">22 700 ₽</span></span>
+          <span class="tp"><span class="tp-model">430 НДНД</span><span class="tp-price">22 700 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Комби</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/0f0a8df8-b7fe-40b3-b647-a4cf7554c39f.jpg" alt="Комбинированный тент" loading="lazy"></div>
+        <div class="product-block-desc">Тент на разные задачи: стоянка, дождь, перевозка и ночевка. Удобно, когда нужен один универсальный вариант.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">330 НДНД</span><span class="tp-price">18 400 ₽</span></span>
+          <span class="tp"><span class="tp-model">350 НДНД</span><span class="tp-price">19 300 ₽</span></span>
+          <span class="tp"><span class="tp-model">360 НДНД</span><span class="tp-price">19 300 ₽</span></span>
+          <span class="tp"><span class="tp-model">370 НДНД</span><span class="tp-price">19 300 ₽</span></span>
+          <span class="tp"><span class="tp-model">380 НДНД</span><span class="tp-price">20 500 ₽</span></span>
+          <span class="tp"><span class="tp-model">390 НДНД</span><span class="tp-price">20 500 ₽</span></span>
+          <span class="tp"><span class="tp-model">410 НДНД</span><span class="tp-price">20 500 ₽</span></span>
+          <span class="tp"><span class="tp-model">430 НДНД</span><span class="tp-price">21 700 ₽</span></span>
+          <span class="tp"><span class="tp-model">450 НДНД</span><span class="tp-price">30 490 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="cta-banner">
+        <h3>Тенты для разных задач</h3>
+        <p>Подскажем, какой тент подойдет именно под вашу модель и ваши выезды: дождь, солнце, дорога или ночевка.</p>
+        <a href="#" class="cta-btn" onclick="goTo(10); return false;">Связаться</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PAGE 3: УСИЛЕНИЯ ══════════════ -->
+  <div class="page services-page" data-page="3">
+    <div class="page-inner">
+      <div class="section-header" style="margin-bottom:8px">
+        <h2 style="text-align:center">Тюнинг: усиления</h2>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Полное усиление НДНД (6см + 18см)</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/05/polnoe-usilenie-ndnd-scaled-1.jpg" alt="Полное усиление НДНД" loading="lazy"></div>
+        <div class="product-block-desc">Мелководье, камни, коряги — после полного усиления дну ничего не страшно. Ленты ПВХ на реданы 6 см и баллоны 18 см — все уязвимые места закрыты.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">300 НДНД</span><span class="tp-price">13 300 ₽</span></span>
+          <span class="tp"><span class="tp-model">330 НДНД</span><span class="tp-price">13 600 ₽</span></span>
+          <span class="tp"><span class="tp-model">350 НДНД</span><span class="tp-price">13 800 ₽</span></span>
+          <span class="tp"><span class="tp-model">360 НДНД</span><span class="tp-price">13 800 ₽</span></span>
+          <span class="tp"><span class="tp-model">370 НДНД</span><span class="tp-price">13 800 ₽</span></span>
+          <span class="tp"><span class="tp-model">380 НДНД</span><span class="tp-price">15 300 ₽</span></span>
+          <span class="tp"><span class="tp-model">390 НДНД</span><span class="tp-price">16 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">410 НДНД</span><span class="tp-price">16 800 ₽</span></span>
+          <span class="tp"><span class="tp-model">430 НДНД</span><span class="tp-price">17 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">450 НДНД</span><span class="tp-price">20 800 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Усиление днища плёнкой ТПУ</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/04/IMG_6727_1-kopiya.png" alt="Усиление днища плёнкой ТПУ" loading="lazy"></div>
+        <div class="product-block-desc">Невидимая броня: прозрачная плёнка ТПУ 0.8 мм защитит дно от проколов и разрывов, не меняя внешний вид. Серьёзно продлевает жизнь вашему КИТу.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">300</span><span class="tp-price">12 650 ₽</span></span>
+          <span class="tp"><span class="tp-model">330</span><span class="tp-price">13 700 ₽</span></span>
+          <span class="tp"><span class="tp-model">350</span><span class="tp-price">14 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">360</span><span class="tp-price">14 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">370</span><span class="tp-price">14 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">380</span><span class="tp-price">14 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">390</span><span class="tp-price">14 700 ₽</span></span>
+          <span class="tp"><span class="tp-model">410</span><span class="tp-price">15 500 ₽</span></span>
+          <span class="tp"><span class="tp-model">430</span><span class="tp-price">15 800 ₽</span></span>
+          <span class="tp"><span class="tp-model">450</span><span class="tp-price">16 900 ₽</span></span>
+          <span class="tp"><span class="tp-model">370К</span><span class="tp-price">14 700 ₽</span></span>
+          <span class="tp"><span class="tp-model">390К</span><span class="tp-price">14 700 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Усиление «Ёлочкой»</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/05/Usilenie-jolochkoj.png" alt="Усиление Ёлочкой" loading="lazy"></div>
+        <div class="product-block-desc">Нос лодки — первое, что бьётся о берег, и «ёлочка» закрывает именно его. Ленты ПВХ по 70 см вдоль килей — бюджетный, но рабочий способ защиты.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">300/330/360</span><span class="tp-price">4 990 ₽</span></span>
+          <span class="tp"><span class="tp-model">350/370/380</span><span class="tp-price">4 990 ₽</span></span>
+          <span class="tp"><span class="tp-model">390/410/430</span><span class="tp-price">6 990 ₽</span></span>
+          <span class="tp"><span class="tp-model">450</span><span class="tp-price">7 990 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Усиление по баллонам 18 см</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/02/IMG_6728-kopiya.png" alt="Усиление по баллонам 18 см" loading="lazy"></div>
+        <div class="product-block-desc">Причаливаете к дикому берегу — баллоны не сотрутся благодаря ленте ПВХ 18 см по всей длине. Особенно актуально, если часто спускаете КИТа волоком.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">270</span><span class="tp-price">3 630 ₽</span></span>
+          <span class="tp"><span class="tp-model">300</span><span class="tp-price">3 630 ₽</span></span>
+          <span class="tp"><span class="tp-model">330</span><span class="tp-price">3 990 ₽</span></span>
+          <span class="tp"><span class="tp-model">350</span><span class="tp-price">4 990 ₽</span></span>
+          <span class="tp"><span class="tp-model">360</span><span class="tp-price">4 990 ₽</span></span>
+          <span class="tp"><span class="tp-model">370</span><span class="tp-price">4 990 ₽</span></span>
+          <span class="tp"><span class="tp-model">380</span><span class="tp-price">5 500 ₽</span></span>
+          <span class="tp"><span class="tp-model">390</span><span class="tp-price">5 990 ₽</span></span>
+          <span class="tp"><span class="tp-model">410</span><span class="tp-price">6 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">430</span><span class="tp-price">6 400 ₽</span></span>
+          <span class="tp"><span class="tp-model">450</span><span class="tp-price">6 990 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Усиление по баллонам 9 см</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/02/IMG_6743-kopiya.png" alt="Усиление по баллонам 9 см" loading="lazy"></div>
+        <div class="product-block-desc">Если эксплуатируете лодку аккуратно, но хотите подстраховаться — 9 см ленты ПВХ хватит. Дешевле варианта на 18 см, а свою работу делает.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">270</span><span class="tp-price">3 080 ₽</span></span>
+          <span class="tp"><span class="tp-model">300</span><span class="tp-price">3 080 ₽</span></span>
+          <span class="tp"><span class="tp-model">330</span><span class="tp-price">3 500 ₽</span></span>
+          <span class="tp"><span class="tp-model">350</span><span class="tp-price">3 630 ₽</span></span>
+          <span class="tp"><span class="tp-model">360</span><span class="tp-price">3 630 ₽</span></span>
+          <span class="tp"><span class="tp-model">370</span><span class="tp-price">3 850 ₽</span></span>
+          <span class="tp"><span class="tp-model">390</span><span class="tp-price">4 290 ₽</span></span>
+          <span class="tp"><span class="tp-model">410</span><span class="tp-price">4 510 ₽</span></span>
+          <span class="tp"><span class="tp-model">430</span><span class="tp-price">4 510 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Усиление по «Булям»</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/03/d5ace1be-b2f6-4050-8a72-18067df4e737-kopiya.jpg" alt="Усиление по Булям" loading="lazy"></div>
+        <div class="product-block-desc">Задняя часть баллонов страдает больше всего при швартовке и спуске — були закрываем лентой ПВХ 70 см. Два варианта ширины на выбор: 9 см или 18 см.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">9 см (270–450)</span><span class="tp-price">2 500 ₽</span></span>
+          <span class="tp"><span class="tp-model">18 см (270–450)</span><span class="tp-price">3 650 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="cta-banner">
+        <h3>Подберем нужное усиление</h3>
+        <p>Подскажем, что лучше подойдет под ваши условия: локальная защита, пленка ТПУ или полное усиление.</p>
+        <a href="#" class="cta-btn" onclick="goTo(10); return false;">Связаться</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PAGE 4: РАБОТЫ С ТРАНЦЕМ ══════════════ -->
+  <div class="page services-page" data-page="4">
+    <div class="page-inner">
+      <div class="section-header" style="margin-bottom:8px">
+        <h2 style="text-align:center">Тюнинг: транец</h2>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Оклейка транца ПВХ тканью</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/03/png-1.png" alt="Оклейка транца ПВХ тканью" loading="lazy"></div>
+        <div class="product-block-desc">Эстетика и защита в одном: оклеиваем транец ПВХ-тканью любого цвета. Дополнительная прочность там, где мотор нагружает сильнее всего.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">2 500 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Установка транца 27 мм</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2024/03/3082a070-ed43-48fc-af0d-2d55e9d80b21.jpg" alt="Установка транца 27 мм" loading="lazy"></div>
+        <div class="product-block-desc">Утолщённый транец 27 мм — апгрейд для моделей 300/330/360, чтобы мотор сидел жёстче. В базе у старших моделей, для младших — дозаказывайте.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">2 000 ₽</span></span>
+        </div>
+        <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;font-family:var(--font-heading);">Для моделей 300/330/360 НДНД</div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Страховка мотора на транец</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/02/74e4e197-b5c0-41f3-aa31-73910f4bf1f7-kopiya.jpg" alt="Страховка мотора на транец" loading="lazy"></div>
+        <div class="product-block-desc">Мотор не уйдёт на дно — два рым-гайки из нержавейки страхуют его от падения. Крепёж в комплекте, ставится за полчаса.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">2 900 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Страховка мотора на кронштейн шасси</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/02/WhatsApp-Image-2023-02-14-at-11.00.29-kopiya.jpg" alt="Страховка мотора на кронштейн шасси" loading="lazy"></div>
+        <div class="product-block-desc">Если есть откидные шасси — страховку мотора ставим прямо на кронштейн, не сверля транец. Быстро и надёжно.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">1 500 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="cta-banner">
+        <h3>Проверим транец под ваш мотор</h3>
+        <p>Подскажем, нужна ли оклейка, усиление или страховка мотора под вашу комплектацию.</p>
+        <a href="#" class="cta-btn" onclick="goTo(10); return false;">Связаться</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ PAGE 5: УСТАНОВКА ОБОРУДОВАНИЯ ══════════════ -->
+  <div class="page services-page" data-page="5">
+    <div class="page-inner">
+      <div class="section-header" style="margin-bottom:8px">
+        <h2 style="text-align:center">Тюнинг: установка</h2>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Установка носового тента</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/FBS01831-scaled-1.jpg" alt="Установка носового тента" loading="lazy"></div>
+        <div class="product-block-desc">Приклеиваем рымы на баллоны — тент встанет идеально. Каждый тент подгоняется индивидуально под вашу лодку.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">1 500 ₽</span></span>
+        </div>
+        <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;font-family:var(--font-heading);">Только с покупкой тента</div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Установка комбинированного тента</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/0f0a8df8-b7fe-40b3-b647-a4cf7554c39f.jpg" alt="Установка комбинированного тента" loading="lazy"></div>
+        <div class="product-block-desc">Комби-тент требует больше точек крепления — установим всё за раз, подгоним тент под конкретный корпус.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">3 000 ₽</span></span>
+        </div>
+        <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;font-family:var(--font-heading);">Только с покупкой тента</div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Установка ручки малой</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2024/03/8e5b733b-1683-4ad6-b45a-65872f044f23.jpg" alt="Установка ручки малой" loading="lazy"></div>
+        <div class="product-block-desc">Ручка в комплекте, место установки согласуем с вами. Удобно для переноски и швартовки.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">1 000 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Установка ручки РИБ</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2024/03/c67cd853-ffcb-495f-996d-e8d37046d298.jpg" alt="Установка ручки РИБ" loading="lazy"></div>
+        <div class="product-block-desc">Усиленная ручка РИБ для жёсткой фиксации — ручка идёт в комплекте с установкой.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">1 100 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Установка носовой сумки</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/03/9cae3695-1b1d-4561-8806-9f565b1e884f-kopiya.jpg" alt="Установка носовой сумки" loading="lazy"></div>
+        <div class="product-block-desc">Ставим 4 рым-кольца — сумка крепится надёжно и не съезжает даже на волне.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">1 500 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Установка якорного рыма и ролика</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/FBS01860-scaled-1.jpg" alt="Установка якорного рыма и ролика" loading="lazy"></div>
+        <div class="product-block-desc">Рым + ролик в комплекте. Якорь опускается и поднимается легко, без царапин на баллоне.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">2 500 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Установка транцевых колёс</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/установка-шасси.jpg" alt="Установка транцевых колёс" loading="lazy"></div>
+        <div class="product-block-desc">Закрепим кронштейны на транце — шасси встанут ровно и надёжно. Быстрая установка при покупке шасси.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">550 ₽</span></span>
+        </div>
+        <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;font-family:var(--font-heading);">Только с покупкой шасси</div>
+      </div>
+
+      <div class="cta-banner">
+        <h3>Установим все за один визит</h3>
+        <p>Тенты, ручки, сумки и шасси можно поставить сразу, чтобы не возвращаться еще раз.</p>
+        <a href="#" class="cta-btn" onclick="goTo(10); return false;">Связаться</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ PAGE 6: КОМФОРТ И ОСНАЩЕНИЕ ══════════════ -->
+  <div class="page services-page" data-page="6">
+    <div class="page-inner">
+
+      <div class="section-header" style="margin-bottom:8px">
+        <h2 style="text-align:center">Аксессуары: комфорт</h2>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Коврики EVA</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/04/cd956bce-35f0-43a8-9812-f4fe120fc4f0-1.jpg" alt="Коврики EVA" loading="lazy"></div>
+        <div class="product-block-desc">Не скользит, легко моется и не пускает песок с чешуёй в стыки дна. Точная выкройка под каждую модель КИТа — положил и забыл.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">270 НДНД</span><span class="tp-price">2 700 ₽</span></span>
+          <span class="tp"><span class="tp-model">300 НДНД</span><span class="tp-price">3 840 ₽</span></span>
+          <span class="tp"><span class="tp-model">330 НДНД</span><span class="tp-price">3 840 ₽</span></span>
+          <span class="tp"><span class="tp-model">350 НДНД</span><span class="tp-price">4 290 ₽</span></span>
+          <span class="tp"><span class="tp-model">360 НДНД</span><span class="tp-price">3 840 ₽</span></span>
+          <span class="tp"><span class="tp-model">370 НДНД</span><span class="tp-price">4 400 ₽</span></span>
+          <span class="tp"><span class="tp-model">380 НДНД</span><span class="tp-price">5 270 ₽</span></span>
+          <span class="tp"><span class="tp-model">390 НДНД</span><span class="tp-price">5 270 ₽</span></span>
+          <span class="tp"><span class="tp-model">410 НДНД</span><span class="tp-price">5 270 ₽</span></span>
+          <span class="tp"><span class="tp-model">430 НДНД</span><span class="tp-price">5 820 ₽</span></span>
+          <span class="tp"><span class="tp-model">450 НДНД</span><span class="tp-price">7 050 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Кресло надувное</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2024/10/321.png" alt="Кресло надувное" loading="lazy"></div>
+        <div class="product-block-desc">Кто попробовал — на жёсткую банку больше не садится. ПВХ 850 г/м², до 150 кг, жёсткость регулируется давлением воздуха.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">300/330/360</span><span class="tp-price">3 500 ₽</span></span>
+          <span class="tp"><span class="tp-model">350/370/380</span><span class="tp-price">4 450 ₽</span></span>
+          <span class="tp"><span class="tp-model">390/410/430</span><span class="tp-price">4 600 ₽</span></span>
+          <span class="tp"><span class="tp-model">450</span><span class="tp-price">4 700 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Сиденье надувное</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2025/11/photo_5256047378052091338_y.jpg" alt="Сиденье надувное" loading="lazy"></div>
+        <div class="product-block-desc">Компактная замена жёсткой банке — занимает меньше места, чем кресло, а сидеть так же удобно. ПВХ 850 г/м², выдерживает до 150 кг.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">300/330/360</span><span class="tp-price">2 000 ₽</span></span>
+          <span class="tp"><span class="tp-model">350/370/380</span><span class="tp-price">2 200 ₽</span></span>
+          <span class="tp"><span class="tp-model">390/410/430</span><span class="tp-price">2 500 ₽</span></span>
+          <span class="tp"><span class="tp-model">450</span><span class="tp-price">2 800 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Пуф надувной</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2025/11/photo_5256047378052091343_y.jpg" alt="Пуф надувной" loading="lazy"></div>
+        <div class="product-block-desc">Дополнительное сиденье или подставка для ног — лёгкий, занимает минимум места в КИТе. Сдул, свернул, убрал в сумку.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">Универсальный</span><span class="tp-price">1 700 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Держатель спиннинга</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/11/11.png" alt="Держатель спиннинга" loading="lazy"></div>
+        <div class="product-block-desc">Руки свободны, спиннинг надёжно зафиксирован на баллоне — незаменимая штука для троллинга. Крепится на ПВХ-основе, держит надёжно.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">Держатель ПВХ</span><span class="tp-price">550 ₽</span></span>
+          <span class="tp"><span class="tp-model">Установка</span><span class="tp-price">650 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Наборы для тюнинга</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/FBS00631-scaled-1.jpg" alt="Наборы для тюнинга" loading="lazy"></div>
+        <div class="product-block-desc">Леера, ручки, грибки, рым-кольца — всё в одном комплекте, остаётся только приклеить. Готовый набор для тюнинга своими руками.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">Набор №1</span><span class="tp-price">1 400 ₽</span></span>
+          <span class="tp"><span class="tp-model">Набор №2</span><span class="tp-price">700 ₽</span></span>
+          <span class="tp"><span class="tp-model">Набор №3</span><span class="tp-price">400 ₽</span></span>
+          <span class="tp"><span class="tp-model">Набор №4</span><span class="tp-price">500 ₽</span></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PAGE 7: ЭЛЕКТРОНАСОСЫ ══════════════ -->
+  <div class="page services-page" data-page="7">
+    <div class="page-inner">
+
+      <div class="section-header" style="margin-bottom:8px">
+        <h2 style="text-align:center">Аксессуары: насосы</h2>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Электронасос MB 80 С</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/Nasos-el.-MB-80-S-scaled-1-kopiya.jpg" alt="Электронасос MB 80 С" loading="lazy"></div>
+        <div class="product-block-desc">Накачает КИТа за считанные минуты от прикуривателя 12V — забудьте про ручной насос. Бюджетный вариант, который делает своё дело.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">1 900 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Электронасос Bravo BP12</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/05/4-kopiya-1.jpg" alt="Электронасос Bravo BP12" loading="lazy"></div>
+        <div class="product-block-desc">Проверенный Bravo — надёжно качает все модели КИТов до рабочего давления. Шланг и переходники уже в комплекте.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">8 900 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Электронасос MARLIN GP-80 S</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/02/1214124.jpg" alt="Электронасос MARLIN GP-80 S" loading="lazy"></div>
+        <div class="product-block-desc">Быстро накачивает и стравливает — не нужно стоять и караулить. Встроенный манометр и автоотключение при нужном давлении.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">9 500 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Электронасос Bravo BTP 12</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/Nasos-el.-Bravo-BTP-12-Manometre-scaled-1-kopiya-600x428.jpg" alt="Электронасос Bravo BTP 12" loading="lazy"></div>
+        <div class="product-block-desc">Двухступенчатый, до 800 мбар, с цифровым манометром и автоотключением — подготовит КИТа к спуску идеально. Лучший выбор для тех, кто не экономит на снаряжении.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">14 900 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="cta-banner">
+        <h3>Подберем насос под вашу лодку</h3>
+        <p>Подскажем по мощности, давлению и удобству, чтобы лодка накачивалась быстро и спокойно.</p>
+        <a href="#" class="cta-btn" onclick="goTo(10); return false;">Связаться</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PAGE 8: ТРАНЦЕВЫЕ ШАССИ ══════════════ -->
+  <div class="page services-page" data-page="8">
+    <div class="page-inner">
+
+      <div class="section-header" style="margin-bottom:8px">
+        <h2 style="text-align:center">Аксессуары: шасси</h2>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Шасси быстросъёмные</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/bystrosemnye.jpg" alt="Шасси быстросъёмные" loading="lazy"></div>
+        <div class="product-block-desc">Довезти КИТа до воды одному — легко: снял за секунду, и поехал. Нержавейка 3 мм, пневмоколёса 260 мм, подходят ко всему модельному ряду.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">7 550 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Шасси быстросъёмные бескамерные</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2024/02/b4760344-876c-4151-9068-73985a4475ca-kopiya.jpg" alt="Шасси быстросъёмные бескамерные" loading="lazy"></div>
+        <div class="product-block-desc">Прокол не страшен, давление проверять не нужно — бескамерные колёса решают. Идеальный вариант для каменистых берегов.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">9 050 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Шасси откидные</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/otkidnye.jpg" alt="Шасси откидные" loading="lazy"></div>
+        <div class="product-block-desc">Откинул, столкнул КИТа в воду — и поехал, снимать ничего не надо. Нержавейка, пневмоколёса 260 мм.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">7 200 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Шасси откидные бескамерные</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2024/02/63c07cf0-07cc-438f-9c4e-2b64bc96db62-kopiya.jpg" alt="Шасси откидные бескамерные" loading="lazy"></div>
+        <div class="product-block-desc">Максимум удобства: остаются на лодке и не боятся проколов. Лучший вариант для тех, кто ценит каждую минуту на воде.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-price">8 700 ₽</span></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PAGE 9: АКСЕССУАРЫ ══════════════ -->
+  <div class="page services-page" data-page="9">
+    <div class="page-inner">
+
+      <div class="section-header" style="margin-bottom:8px">
+        <h2 style="text-align:center">Аксессуары</h2>
+      </div>
+
+      <div class="page-intro">
+        <p>Комфорт, сумки, чехлы и полезные мелочи для лодки и мотора. Все, что помогает хранить, перевозить и пользоваться KITT BOATS удобнее.</p>
+        <div class="page-pill-row">
+          <span class="page-pill">Комфорт</span>
+          <span class="page-pill">Сумки</span>
+          <span class="page-pill">Чехлы</span>
+          <span class="page-pill">Хранение</span>
+        </div>
+      </div>
+
+      <div class="section-divider"><span>Хиты для старта</span></div>
+
+      <div class="product-block featured-block">
+        <div class="product-badge">Хит для долгих выходов</div>
+        <div class="product-block-name">Мягкие накладки на сиденье</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/04/2227ae55-de73-4d23-b89b-7e86cd29a848.jpg" alt="Мягкие накладки на сиденье" loading="lazy"></div>
+        <div class="product-block-desc">После часа на жёсткой банке спина скажет спасибо — пенополиуретан 40 мм, армированный ПВХ 500 г/м². Шесть цветов на выбор, подберёте под КИТа.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">270</span><span class="tp-price">770 ₽</span></span>
+          <span class="tp"><span class="tp-model">300/330</span><span class="tp-price">880 ₽</span></span>
+          <span class="tp"><span class="tp-model">350/370</span><span class="tp-price">920 ₽</span></span>
+          <span class="tp"><span class="tp-model">390/430</span><span class="tp-price">1 030 ₽</span></span>
+          <span class="tp"><span class="tp-model">450</span><span class="tp-price">1 150 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-badge">Выгодный комплект</div>
+        <div class="product-block-name">Комплект: 2 накладки + сумка</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/01/FBS00355-scaled-1.jpg" alt="Комплект накладок" loading="lazy"></div>
+        <div class="product-block-desc">Две накладки и сумка-органайзер одним комплектом — дешевле, чем по отдельности. Берёте сразу всё для комфорта в КИТе.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">300/330</span><span class="tp-price">2 640 ₽</span></span>
+          <span class="tp"><span class="tp-model">350/370</span><span class="tp-price">2 800 ₽</span></span>
+          <span class="tp"><span class="tp-model">390/430</span><span class="tp-price">2 970 ₽</span></span>
+          <span class="tp"><span class="tp-model">450</span><span class="tp-price">3 360 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Сумка для лодки</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2024/08/Bez-imeni.png" alt="Сумка для лодки" loading="lazy"></div>
+        <div class="product-block-desc">Молния по всей длине — удобно достать и уложить КИТа обратно. Усиленные ручки, два цвета на выбор.</div>
+        <div class="tent-prices">
+          <span class="tp"><span class="tp-model">270</span><span class="tp-price">1 650 ₽</span></span>
+          <span class="tp"><span class="tp-model">300/330</span><span class="tp-price">2 050 ₽</span></span>
+          <span class="tp"><span class="tp-model">350/380</span><span class="tp-price">2 660 ₽</span></span>
+          <span class="tp"><span class="tp-model">390/450</span><span class="tp-price">2 900 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="section-divider"><span>Хранение и перевозка</span></div>
+
+      <div class="product-block">
+        <div class="product-block-name">Чехол для мотора</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/12/5.webp" alt="Чехол для мотора" loading="lazy"></div>
+        <div class="product-block-desc">Мотор защищён со всех сторон: ПВХ снаружи, водонепроницаемый Оксфорд 300D внутри, изолон между ними. Две плечевые ручки и карман для мелочей.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">2–3.6 л.с.</span><span class="tp-price">1 750 ₽</span></span>
+          <span class="tp"><span class="tp-model">4–9.8 л.с.</span><span class="tp-price">2 300 ₽</span></span>
+          <span class="tp"><span class="tp-model">9.9–18 л.с.</span><span class="tp-price">2 650 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Чехол транспортировочный для мотора</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2025/03/ae4176f2-0b7f-4fc6-9aca-b963dcb8c948.jpeg" alt="Чехол транспортировочный" loading="lazy"></div>
+        <div class="product-block-desc">Защитит мотор 9.9–20 л.с. от грязи и повреждений при перевозке на транце. Лёгкий, быстро надевается.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">9.9–20 л.с.</span><span class="tp-price">1 600 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Носовая сумка-рундук</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/05/LAV_7675.webp" alt="Носовая сумка-рундук" loading="lazy"></div>
+        <div class="product-block-desc">Все вещи в носу лодки — в порядке и под рукой, а не валяются россыпью. Армированный ПВХ, водостойкая молния, четыре цвета.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">Универсальная</span><span class="tp-price">1 750 ₽</span></span>
+          <span class="tp"><span class="tp-model">Расширенная</span><span class="tp-price">1 900 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Сумка под сиденье</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/03/f3d3b2a0-a484-486b-96d2-ad5dd5cdc377.jpg" alt="Сумка под сиденье" loading="lazy"></div>
+        <div class="product-block-desc">Всё аккуратно убрано под банку — вещи не валяются по дну и не мешают под ногами. Ставится под сиденье любой модели КИТа.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">61 см</span><span class="tp-price">1 100 ₽</span></span>
+          <span class="tp"><span class="tp-model">75 см</span><span class="tp-price">1 200 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-badge">Самый практичный вариант</div>
+        <div class="product-block-name">Сумки на ликтрос</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/12/111.jpg" alt="Сумки на ликтрос" loading="lazy"></div>
+        <div class="product-block-desc">Крепятся на ликтрос — всё нужное под рукой, ничего не летает по лодке на волне. Компактные, не мешают в кокпите.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">55 см</span><span class="tp-price">550 ₽</span></span>
+          <span class="tp"><span class="tp-model">55 см с бут.</span><span class="tp-price">650 ₽</span></span>
+          <span class="tp"><span class="tp-model">70 см с бут.</span><span class="tp-price">870 ₽</span></span>
+          <span class="tp"><span class="tp-model">Органайзер EVA</span><span class="tp-price">900 ₽</span></span>
+        </div>
+      </div>
+
+      <!-- Полезные мелочи -->
+
+      <div class="section-divider"><span>Полезные мелочи</span></div>
+
+      <div class="product-block">
+        <div class="product-block-name">Бутылочница на ликтрос</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2022/04/FBS00092-kopiya.jpg" alt="Бутылочница на ликтрос" loading="lazy"></div>
+        <div class="product-block-desc">Напиток всегда под рукой и не опрокинется даже на волне. Крепится на ликтрос за секунду.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">Бутылочница</span><span class="tp-price">430 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Органайзер на ликтрос</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/12/IMG_0809.webp" alt="Органайзер на ликтрос" loading="lazy"></div>
+        <div class="product-block-desc">Телефон, ключи, напиток — всё в одном месте на ликтросе КИТа. Маленький, но вмещает всё самое нужное.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">Органайзер</span><span class="tp-price">350 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Сумка для шасси</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2025/03/89c2f37f-b521-42e8-b6a2-261d500c613f.jpeg" alt="Сумка для шасси" loading="lazy"></div>
+        <div class="product-block-desc">Шасси не испачкают ни машину, ни лодку при перевозке. Прочный ПВХ, легко моется.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">Сумка ПВХ</span><span class="tp-price">570 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Сумка для аксессуаров</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/08/LAV_7478.webp" alt="Сумка для аксессуаров" loading="lazy"></div>
+        <div class="product-block-desc">Вёсла, насос, слани — всё в одной сумке, удобно нести от машины до воды. Длинная, вмещает полный комплект.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">115 см</span><span class="tp-price">640 ₽</span></span>
+          <span class="tp"><span class="tp-model">125 см</span><span class="tp-price">660 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Сумка для мелочей</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2025/03/aef5f8d6-0c95-4a22-9f24-b5de3fd331cd.jpeg" alt="Сумка для мелочей" loading="lazy"></div>
+        <div class="product-block-desc">Ключи, телефон, кошелёк — всё на месте и не намокнет. Компактная, берите в любой выход на воду.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">Сумка</span><span class="tp-price">500 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Сумка для вещей</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/12/Snimok-ekrana-2023-12-15-100839-kopiya.png" alt="Сумка для вещей" loading="lazy"></div>
+        <div class="product-block-desc">Одежда, полотенце и всё что нужно на воде — в одной лёгкой сумке. Компактная и недорогая.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">Дорожная</span><span class="tp-price">370 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Чехол для удочек</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/12/Snimok-ekrana-2023-12-15-104230-kopiya-1.png" alt="Чехол для удочек" loading="lazy"></div>
+        <div class="product-block-desc">Удочки доедут до водоёма целыми — чехол 135 см защитит при перевозке и хранении. Прочный материал, надёжная молния.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">135 см</span><span class="tp-price">440 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Чехлы для топливных баков</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2025/03/8bbdbb8f-d7b8-4033-baf7-3075dc002273.jpeg" alt="Чехлы для топливных баков" loading="lazy"></div>
+        <div class="product-block-desc">Бак не болтается и не царапает лодку — сидит в чехле как влитой. ПВХ, удобные ручки для переноски.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">12 литров</span><span class="tp-price">1 000 ₽</span></span>
+          <span class="tp"><span class="tp-model">24 литра</span><span class="tp-price">1 100 ₽</span></span>
+          <span class="tp"><span class="tp-model">25 литров</span><span class="tp-price">1 150 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">Гермомешки</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2023/02/FBS00841-1-kopiya.jpg" alt="Гермомешки" loading="lazy"></div>
+        <div class="product-block-desc">Телефон, документы, сухая одежда — всё останется сухим, даже если КИТ наберёт воды. Берите на воду и не переживайте.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">10 литров</span><span class="tp-price">650 ₽</span></span>
+          <span class="tp"><span class="tp-model">20 литров</span><span class="tp-price">760 ₽</span></span>
+          <span class="tp"><span class="tp-model">30 литров</span><span class="tp-price">870 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="cta-banner">
+        <h3>Подберем комплект под ваши задачи</h3>
+        <p>Скажите модель лодки и что уже есть. Подскажем, что лучше взять сразу, а что можно докупить позже.</p>
+        <a href="#" class="cta-btn" onclick="goTo(10); return false;">Связаться</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PAGE 10: МОТОРЫ ══════════════ -->
+  <div class="page services-page" data-page="10">
+    <div class="page-inner">
+
+      <div class="section-header" style="margin-bottom:16px">
+        <h2 style="text-align:center">Моторы KITT BOATS</h2>
+        <p style="text-align:center; color:rgba(255,255,255,0.72); margin-top:8px; font-size:14px;">Моторы под наши лодки: с понятной мощностью, живыми фото и ценами в одном месте.</p>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">KITT BOATS 9.8 л.с.</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2025/01/sajt-motor-9.8-1.png" alt="KITT BOATS 9.8" loading="lazy"></div>
+        <div class="product-block-desc">Для лодок 300-370. Легкий и понятный вариант, если нужен рабочий мотор для спокойных и частых выездов.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">Цена</span><span class="tp-price">78 500 ₽</span></span>
+          <span class="tp"><span class="tp-model">Предзаказ</span><span class="tp-price">73 005 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="product-block">
+        <div class="product-block-name">KITT BOATS 9.9 л.с.</div>
+        <div class="tent-img-wrap"><img class="tent-img" src="https://kittboats.com/wp-content/uploads/2025/01/sajt-motor-9.9-1.png" alt="KITT BOATS 9.9" loading="lazy"></div>
+        <div class="product-block-desc">Для лодок 370-450. Если нужен запас мощности и уверенная тяга под большую лодку и загрузку.</div>
+        <div class="tent-prices" style="justify-content:center">
+          <span class="tp"><span class="tp-model">Цена</span><span class="tp-price">92 800 ₽</span></span>
+          <span class="tp"><span class="tp-model">Предзаказ</span><span class="tp-price">86 304 ₽</span></span>
+        </div>
+      </div>
+
+      <div class="cta-banner">
+        <h3>Подскажем, какой мотор подойдет</h3>
+        <p>Сориентируем по мощности, лодке и задачам, чтобы комплект был сбалансированным и без переплаты.</p>
+        <a href="#" class="cta-btn" onclick="goTo(10); return false;">Связаться</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PAGE 11: ФИНАЛ ══════════════ -->
+  <div class="page final-page" data-page="11">
+
+    <div class="cover-inner">
+      <div class="review-title">Отзывы от КИТоводов</div>
+      <div class="review-grid">
+        <div class="review-card">
+          <div class="review-text">Наконец-то в лодке стало чисто. Раньше песок, грязь, чешуя — всё разносилось, сейчас вытащил коврик, стряхнул — и всё остаётся в сотах, моется вообще легко. Ходить по нему удобнее, не скользит. Реально полезная вещь, лучше сразу брать в комплекте с лодкой, чтобы потом не платить за доставку.</div>
+          <div class="review-author">Илья, Рыбинск</div>
+        </div>
+        <div class="review-card">
+          <div class="review-text">Взял полное усиление и коврик EVA — за два сезона ни одной царапины на дне. КИТ как новый.</div>
+          <div class="review-author">Алексей, Вологда</div>
+        </div>
+        <div class="review-card">
+          <div class="review-text">С накладками вообще другой комфорт. Раньше через пару часов уже ерзал, сейчас спокойно сидишь хоть долго. Даже жена начала ездить со мной, говорит намного удобнее стало. На волнах тоже мягче ощущается.</div>
+          <div class="review-author">Сергей, Выборг</div>
+        </div>
+        <div class="review-card">
+          <div class="review-text">Откидные шасси — это кайф. Один спустил лодку на воду за минуту, не надрывая спину.</div>
+          <div class="review-author">Дмитрий, Тверь</div>
+        </div>
+      </div>
+
+      <div class="final-contact-card" style="animation: fadeSlideUp 0.8s ease 0.95s both;">
+        <div class="final-help">Звоните, пишите - поможем выбрать</div>
+
+        <div class="final-action-row">
+          <a href="tel:88122147800" class="final-action-btn primary">Позвонить</a>
+          <a href="https://t.me/kittboats" class="final-action-btn" target="_blank" rel="noopener">Telegram</a>
+          <a href="https://vk.com/kittboats" class="final-action-btn" target="_blank" rel="noopener">VK</a>
+          <a href="https://max.ru/u/f9LHodD0cOJcuqcYyN3x6HXI0KR_P2_8AGn6lBzGDoXCV66-ENWTeYkB0KU" class="final-action-btn" target="_blank" rel="noopener">MAX</a>
+        </div>
+
+        <div class="final-contacts">
+          <div class="final-phone-row">
+            <a href="tel:88122147800" class="final-phone">+7 (812) 214-78-00</a>
+            <span class="final-phone-label">(для звонков)</span>
+          </div>
+          <div class="final-phone-row final-messenger-row">
+            <div class="final-phone-inline">
+              <a href="tel:79992083333" class="final-phone" style="font-size: clamp(13px, 3.8vw, 17px);">+7 (999) 208-33-33</a>
+              <span class="final-phone-label">(для мессенджеров)</span>
+            </div>
+            <div class="final-messengers">
+              <a href="https://t.me/kittboats" class="mc-app tg" target="_blank" rel="noopener">TG</a>
+              <a href="https://vk.com/kittboats" class="mc-app vk" target="_blank" rel="noopener">VK</a>
+              <a href="https://max.ru/u/f9LHodD0cOJcuqcYyN3x6HXI0KR_P2_8AGn6lBzGDoXCV66-ENWTeYkB0KU" class="mc-app max" target="_blank" rel="noopener">MAX</a>
+            </div>
+          </div>
+          <div class="final-addr">г. Санкт-Петербург, Шафировский пр., д. 8 — Адрес завода</div>
+          <a href="https://kittboats.com" class="final-site" target="_blank" rel="noopener">kittboats.com — официальный сайт завода</a>
+        </div>
+      </div>
+
+      <button class="cover-cta final-back-btn" onclick="goTo(0)" style="margin-top:24px; animation: fadeSlideUp 0.8s ease 1.1s both;"><span>← В начало каталога</span></button>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="scroll-down" id="scrollDown">
+  <span>Листайте вниз</span>
+  <svg viewBox="0 0 24 24"><path d="M12 5v12"/><path d="M7 12l5 5 5-5"/></svg>
+</div>
+
+<!-- Navigation -->
+<button class="nav-arrow left" id="btnPrev" aria-label="Назад">&#10094;</button>
+<button class="nav-arrow right" id="btnNext" aria-label="Далее">&#10095;</button>
+
+<!-- Bottom Bar -->
+<div class="bottom-bar">
+  <div class="page-dots" id="dots"></div>
+  <div class="page-counter" id="counter"></div>
+</div>
+
+<script>
+(function() {
+  const TOTAL = 11;
+  let current = 0, animating = false;
+
+  const pages = document.querySelectorAll('.page');
+  const counter = document.getElementById('counter');
+  const dotsWrap = document.getElementById('dots');
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+  const scrollDown = document.getElementById('scrollDown');
+
+  function goTo(idx) {
+    if (animating || idx === current || idx < 0 || idx >= TOTAL) return;
+    animating = true; current = idx; update();
+    setTimeout(() => { animating = false; checkScroll(); }, 650);
+  }
+  function nextPage() { goTo(current + 1); }
+  function prevPage() { goTo(current - 1); }
+
+  // Expose globally before any onclick can fire
+  window.goTo = goTo;
+  window.next = nextPage;
+  window.prev = prevPage;
+
+  btnPrev.addEventListener('click', prevPage);
+  btnNext.addEventListener('click', nextPage);
+
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('button');
+    d.className = 'page-dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(d);
+  }
+
+  function update() {
+    pages.forEach((p, i) => {
+      p.classList.remove('active', 'prev', 'next');
+      if (i === current) { p.classList.add('active'); p.scrollTop = 0; }
+      else if (i < current) p.classList.add('prev');
+      else p.classList.add('next');
+    });
+    counter.textContent = (current + 1) + ' / ' + TOTAL;
+    dotsWrap.querySelectorAll('.page-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    // Cover: only right arrow. Last page: only left arrow. Middle: both.
+    btnPrev.style.display = current === 0 ? 'none' : '';
+    btnNext.style.display = current === TOTAL - 1 ? 'none' : '';
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === TOTAL - 1;
+    var activePage = pages[current];
+    document.body.classList.toggle('dark-pages-active', activePage && !activePage.classList.contains('cover-page'));
+    checkScroll();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); prevPage(); }
+  });
+
+  let sx = 0, sy = 0, sw = false;
+  const fb = document.getElementById('flipbook');
+  fb.addEventListener('touchstart', (e) => { sx = e.changedTouches[0].clientX; sy = e.changedTouches[0].clientY; sw = true; }, { passive: true });
+  fb.addEventListener('touchend', (e) => {
+    if (!sw) return; sw = false;
+    const dx = e.changedTouches[0].clientX - sx;
+    const dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { dx < 0 ? nextPage() : prevPage(); }
+  }, { passive: true });
+
+  update();
+
+  function checkScroll() {
+    var activePage = pages[current];
+    if (!activePage || current === 0 || current === TOTAL - 1) {
+      scrollDown.classList.remove('visible');
+      return;
+    }
+    var canScroll = activePage.scrollHeight > activePage.clientHeight + 20;
+    var atBottom = activePage.scrollTop + activePage.clientHeight >= activePage.scrollHeight - 30;
+    scrollDown.classList.toggle('visible', canScroll && !atBottom);
+  }
+  pages.forEach(function(p) {
+    p.addEventListener('scroll', checkScroll, { passive: true });
+  });
+  setTimeout(checkScroll, 300);
+
+  // Image fallback placeholders (п.5)
+  document.querySelectorAll('.tent-img').forEach(function(img) {
+    img.addEventListener('error', function() {
+      var wrap = this.closest('.tent-img-wrap');
+      if (!wrap) return;
+      var name = '';
+      var nameEl = wrap.parentElement.querySelector('.product-block-name');
+      if (nameEl) name = nameEl.textContent;
+      wrap.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:10px;color:rgba(255,255,255,0.5);font-family:var(--font-heading);font-size:13px;text-align:center;padding:12px;text-transform:uppercase;letter-spacing:0.5px;">' + name + '</div>';
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>
